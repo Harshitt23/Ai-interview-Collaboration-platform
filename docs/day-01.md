@@ -334,4 +334,4 @@ Completed:
 - GitHub setup
 
 Next Step:
-Build authentication system using JWT and bcrypt.
+We will Build authentication system using JWT and bcrypt.
