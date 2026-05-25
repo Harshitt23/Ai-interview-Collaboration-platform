@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: harshit
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ai_platform
+    ports:
+      - "5432:5432"
