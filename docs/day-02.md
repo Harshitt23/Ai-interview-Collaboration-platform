@@ -340,4 +340,4 @@ Implement:
 - Login API
 - JWT token generation
 - authentication middleware
-- protected routes
+- protected route
