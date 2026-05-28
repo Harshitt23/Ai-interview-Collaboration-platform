@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 
 import prisma from "../utils/prisma";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -50,4 +51,73 @@ export const signup = async (req: Request, res: Response) => {
       message: "Server error",
     });
   }
+};
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password required",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const getMe = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: "Protected route accessed",
+  });
 };
