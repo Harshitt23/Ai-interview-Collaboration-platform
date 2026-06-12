@@ -350,4 +350,4 @@ Infrastructure:
 - Global auth state
 - User profile integration
 - Better dashboard UI
-- Realtime collaboration foundations
+- Realtime collaboration foundation
