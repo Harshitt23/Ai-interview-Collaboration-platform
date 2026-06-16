@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 import authRoutes from "./routes/auth.routes";
+import { registerCodeSocket } from "./sockets/code.socket";
 
 const app = express();
 
@@ -14,8 +17,18 @@ app.get("/", (req, res) => {
   res.send("Backend Running...");
 });
 
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
+
+registerCodeSocket(io);
+
 const PORT = 5000;
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

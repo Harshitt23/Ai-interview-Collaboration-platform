@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useAuthStore } from "@/lib/store/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,10 +19,7 @@ export default function LoginPage() {
         password,
       });
 
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
+      setAuth(response.data.token, response.data.user);
 
       alert("Login successful");
 

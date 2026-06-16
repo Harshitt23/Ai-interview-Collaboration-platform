@@ -4,6 +4,10 @@ import bcrypt from "bcrypt";
 import prisma from "../utils/prisma";
 import jwt from "jsonwebtoken";
 
+interface AuthRequest extends Request {
+  userId?: string;
+}
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
@@ -115,9 +119,36 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const getMe = async (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    message: "Protected route accessed",
-  });
+export const getMe = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
