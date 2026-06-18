@@ -9,6 +9,7 @@ interface AuthRequest extends Request {
 }
 
 export const signup = async (req: Request, res: Response) => {
+  console.log("signup hit", req.body);
   try {
     const { name, email, password } = req.body;
 

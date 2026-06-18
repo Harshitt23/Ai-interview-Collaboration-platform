@@ -40,4 +40,6 @@ const PORT = process.env.PORT || 5000;
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
+  console.log(`CLIENT_URL: ${CLIENT_URL}`);
 });
