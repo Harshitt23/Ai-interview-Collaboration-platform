@@ -29,3 +29,14 @@ export const submitFeedback = async (req: AuthRequest, res: Response) => {
 
   return res.status(201).json({ success: true, feedback });
 };
+
+export const getFeedbacks = async (req: AuthRequest, res: Response) => {
+  const interviewerId = req.userId!;
+
+  const feedbacks = await prisma.feedback.findMany({
+    where: { interviewerId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return res.status(200).json({ success: true, feedbacks });
+};

@@ -42,7 +42,12 @@ export default function DashboardPage() {
     <div style={{ padding: "32px", maxWidth: "480px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
         <h1>Dashboard</h1>
-        <button onClick={handleLogout}>Logout</button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button onClick={() => router.push("/history")} style={{ background: "#1e1e1e", color: "#aaa", border: "1px solid #333", padding: "6px 14px", borderRadius: "6px", cursor: "pointer" }}>
+            📋 History
+          </button>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
       </div>
 
       <p>Welcome, {user.name}</p>
