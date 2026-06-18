@@ -233,7 +233,7 @@ export default function RoomPage() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:5000/api/feedback", {
+      await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/feedback`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

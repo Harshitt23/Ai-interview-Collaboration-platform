@@ -10,7 +10,9 @@ import { registerCodeSocket } from "./sockets/code.socket";
 
 const app = express();
 
-app.use(cors());
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -23,14 +25,12 @@ app.get("/", (req, res) => {
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: "http://localhost:3000",
-  },
+  cors: { origin: CLIENT_URL },
 });
 
 registerCodeSocket(io);
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

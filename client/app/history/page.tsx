@@ -43,7 +43,7 @@ export default function HistoryPage() {
   useEffect(() => {
     if (!user) return;
     const token = localStorage.getItem("token");
-    fetch("http://localhost:5000/api/feedback", {
+    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/feedback`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
