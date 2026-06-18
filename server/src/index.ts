@@ -5,6 +5,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 import authRoutes from "./routes/auth.routes";
+import feedbackRoutes from "./routes/feedback.routes";
 import { registerCodeSocket } from "./sockets/code.socket";
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running...");

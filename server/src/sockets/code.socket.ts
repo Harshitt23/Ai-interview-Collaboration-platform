@@ -332,6 +332,13 @@ export const registerCodeSocket = (io: Server) => {
       io.to(roomId).emit("interview-started", { problem, timer });
     });
 
+    socket.on("end-interview", ({ roomId }: JoinRoomPayload) => {
+      if (roomId !== currentRoom) return;
+      roomProblem.delete(roomId);
+      roomTimer.delete(roomId);
+      io.to(roomId).emit("interview-ended");
+    });
+
     socket.on("chat-message", ({ roomId, text }: ChatMessagePayload) => {
       if (roomId !== currentRoom) return;
       const trimmed = text.trim();

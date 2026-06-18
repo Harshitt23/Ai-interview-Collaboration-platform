@@ -47,7 +47,11 @@ export default function RoomPage() {
   const [output, setOutput] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
-  const [interviewState, setInterviewState] = useState<"idle" | "active">("idle");
+  const [interviewState, setInterviewState] = useState<"idle" | "active" | "ended">("idle");
+  const [isHost, setIsHost] = useState(false);
+  const [feedback, setFeedback] = useState({ rating: 5, strengths: "", improvements: "" });
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -149,6 +153,11 @@ export default function RoomPage() {
       alert(message);
     });
 
+    socket.on("interview-ended", () => {
+      setInterviewState("ended");
+      if (timerInterval.current) clearInterval(timerInterval.current);
+    });
+
     socket.on("chat-message", ({ socketId, text }: { socketId: string; text: string }) => {
       setMessages((prev) => [...prev, { socketId, text }]);
       setChatOpen((open) => {
@@ -167,6 +176,7 @@ export default function RoomPage() {
       socket.off("user-left");
       socket.off("interview-started");
       socket.off("interview-error");
+      socket.off("interview-ended");
       socket.off("chat-message");
     };
   }, [roomId, user]);
@@ -210,7 +220,31 @@ export default function RoomPage() {
   };
 
   const handleStartInterview = () => {
+    setIsHost(true);
     getSocket().emit("start-interview", { roomId });
+  };
+
+  const handleEndInterview = () => {
+    getSocket().emit("end-interview", { roomId });
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedback.strengths.trim() || !feedback.improvements.trim()) return;
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("http://localhost:5000/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ roomId, ...feedback }),
+      });
+      setFeedbackSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -247,7 +281,7 @@ export default function RoomPage() {
         )}
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {interviewState !== "active" && (
+          {interviewState === "idle" && (
             <button
               onClick={handleStartInterview}
               style={{
@@ -261,6 +295,23 @@ export default function RoomPage() {
               }}
             >
               🎯 Start Interview
+            </button>
+          )}
+
+          {interviewState === "active" && isHost && (
+            <button
+              onClick={handleEndInterview}
+              style={{
+                background: "#dc2626",
+                color: "#fff",
+                border: "none",
+                padding: "4px 14px",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              ⏹ End Interview
             </button>
           )}
 
@@ -614,6 +665,149 @@ export default function RoomPage() {
           </div>
         )}
       </div>
+
+      {/* Interview ended overlay */}
+      {interviewState === "ended" && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+          }}
+        >
+          {isHost ? (
+            <div
+              style={{
+                background: "#1e1e1e",
+                borderRadius: "12px",
+                padding: "36px",
+                width: "480px",
+                color: "#fff",
+              }}
+            >
+              {feedbackSubmitted ? (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "48px", marginBottom: "12px" }}>✅</div>
+                  <h2 style={{ margin: "0 0 8px" }}>Feedback Submitted</h2>
+                  <p style={{ color: "#888", margin: 0 }}>The session has been recorded.</p>
+                </div>
+              ) : (
+                <>
+                  <h2 style={{ margin: "0 0 4px", fontSize: "20px" }}>Interview Ended</h2>
+                  <p style={{ color: "#888", fontSize: "13px", marginTop: 0, marginBottom: "24px" }}>
+                    Leave feedback for this session
+                  </p>
+
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ fontSize: "12px", color: "#888", display: "block", marginBottom: "6px" }}>
+                      RATING
+                    </label>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => setFeedback((f) => ({ ...f, rating: n }))}
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "8px",
+                            border: "none",
+                            background: feedback.rating === n ? "#4f46e5" : "#2d2d2d",
+                            color: "#fff",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                          }}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ fontSize: "12px", color: "#888", display: "block", marginBottom: "6px" }}>
+                      STRENGTHS
+                    </label>
+                    <textarea
+                      value={feedback.strengths}
+                      onChange={(e) => setFeedback((f) => ({ ...f, strengths: e.target.value }))}
+                      placeholder="What did the candidate do well?"
+                      rows={3}
+                      style={{
+                        width: "100%",
+                        background: "#0f0f0f",
+                        color: "#fff",
+                        border: "1px solid #333",
+                        borderRadius: "6px",
+                        padding: "8px 10px",
+                        fontSize: "13px",
+                        resize: "vertical",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "24px" }}>
+                    <label style={{ fontSize: "12px", color: "#888", display: "block", marginBottom: "6px" }}>
+                      AREAS FOR IMPROVEMENT
+                    </label>
+                    <textarea
+                      value={feedback.improvements}
+                      onChange={(e) => setFeedback((f) => ({ ...f, improvements: e.target.value }))}
+                      placeholder="What could the candidate improve?"
+                      rows={3}
+                      style={{
+                        width: "100%",
+                        background: "#0f0f0f",
+                        color: "#fff",
+                        border: "1px solid #333",
+                        borderRadius: "6px",
+                        padding: "8px 10px",
+                        fontSize: "13px",
+                        resize: "vertical",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleSubmitFeedback}
+                    disabled={isSubmitting || !feedback.strengths.trim() || !feedback.improvements.trim()}
+                    style={{
+                      width: "100%",
+                      background: isSubmitting ? "#555" : "#4f46e5",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "8px",
+                      padding: "10px",
+                      fontWeight: "bold",
+                      fontSize: "14px",
+                      cursor: isSubmitting ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {isSubmitting ? "Submitting…" : "Submit Feedback"}
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", color: "#fff" }}>
+              <div style={{ fontSize: "56px", marginBottom: "16px" }}>🏁</div>
+              <h2 style={{ margin: "0 0 8px", fontSize: "24px" }}>Interview Complete</h2>
+              <p style={{ color: "#888", margin: 0 }}>
+                The interviewer has ended the session. Good luck!
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

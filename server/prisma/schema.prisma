@@ -8,9 +8,21 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String     @unique
   password  String
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+  feedbacks Feedback[]
+}
+
+model Feedback {
+  id            String   @id @default(uuid())
+  roomId        String
+  rating        Int
+  strengths     String
+  improvements  String
+  createdAt     DateTime @default(now())
+  interviewer   User     @relation(fields: [interviewerId], references: [id])
+  interviewerId String
 }
