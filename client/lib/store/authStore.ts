@@ -51,6 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: response.data.user,
         isLoading: false,
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       localStorage.removeItem("token");
       set({ token: null, user: null, isLoading: false });
