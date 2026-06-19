@@ -247,7 +247,12 @@ export default function RoomPage() {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", color: "#888", fontSize: "14px" }}>
+        Loading…
+      </div>
+    );
   if (!user) return null;
 
   return (
