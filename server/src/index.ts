@@ -10,15 +10,37 @@ import { registerCodeSocket } from "./sockets/code.socket";
 
 const app = express();
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+// Allowed origins: comma-separated CLIENT_URL list + localhost, plus any *.vercel.app deploy
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-app.use(cors({
-  origin: CLIENT_URL,
+const isAllowedOrigin = (origin?: string): boolean => {
+  if (!origin) return true; // non-browser requests (curl, server-to-server)
+  if (allowedOrigins.includes(origin)) return true;
+  try {
+    const host = new URL(origin).hostname;
+    if (host === "localhost" || host === "127.0.0.1") return true;
+    if (host.endsWith(".vercel.app")) return true; // production + preview deploys
+  } catch {
+    return false;
+  }
+  return false;
+};
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    callback(new Error(`Origin not allowed by CORS: ${origin}`));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-}));
-app.options("/{*wildcard}", cors());
+};
+
+app.use(cors(corsOptions));
+app.options("/{*wildcard}", cors(corsOptions));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -31,7 +53,13 @@ app.get("/", (req, res) => {
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-  cors: { origin: CLIENT_URL },
+  cors: {
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+  },
 });
 
 registerCodeSocket(io);
@@ -41,5 +69,5 @@ const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
-  console.log(`CLIENT_URL: ${CLIENT_URL}`);
+  console.log(`Allowed origins: ${allowedOrigins.join(", ")} (+ *.vercel.app)`);
 });
