@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/lib/store/authStore";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,24 +38,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
-      {/* Background glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl" />
-      </div>
+      {/* Background layers */}
+      <div className="absolute inset-0 bg-grid mask-radial pointer-events-none" />
+      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-indigo-600/15 rounded-full blur-[110px] pointer-events-none" />
 
       <div className="relative w-full max-w-sm">
         {/* Logo */}
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-            AI
-          </div>
-          <span className="text-white font-semibold text-lg tracking-tight">
-            InterviewLab
-          </span>
+        <div className="flex justify-center mb-8">
+          <Logo size="md" />
         </div>
 
         {/* Card */}
-        <div className="bg-[#111111] border border-white/[0.08] rounded-2xl p-8 shadow-2xl">
+        <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-2xl shadow-black/40">
           <h1 className="text-white text-xl font-semibold mb-1">Welcome back</h1>
           <p className="text-neutral-500 text-sm mb-7">
             Sign in to continue to your dashboard

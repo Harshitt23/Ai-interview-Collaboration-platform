@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
+import Logo from "@/components/Logo";
+import { ArrowLeft, ClipboardList, ChevronDown, Star } from "lucide-react";
 
 interface Feedback {
   id: string;
@@ -17,12 +19,15 @@ function Stars({ rating }: { rating: number }) {
   return (
     <span className="inline-flex gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <span
+        <Star
           key={n}
-          className={n <= rating ? "text-amber-400" : "text-neutral-700"}
-        >
-          ★
-        </span>
+          size={14}
+          className={
+            n <= rating
+              ? "text-amber-400 fill-amber-400"
+              : "text-neutral-700 fill-neutral-700"
+          }
+        />
       ))}
     </span>
   );
@@ -65,24 +70,22 @@ export default function HistoryPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white relative">
+      <div className="absolute inset-0 bg-grid mask-radial pointer-events-none" />
+
       {/* Top nav */}
-      <nav className="border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
-            AI
-          </div>
-          <span className="font-semibold tracking-tight">InterviewLab</span>
-        </div>
+      <nav className="relative border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
+        <Logo />
         <button
           onClick={() => router.push("/dashboard")}
-          className="text-sm bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-sm bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
         >
-          ← Dashboard
+          <ArrowLeft size={15} />
+          Dashboard
         </button>
       </nav>
 
-      <main className="max-w-2xl mx-auto px-6 py-12">
+      <main className="relative max-w-2xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight">
             Interview History
@@ -95,8 +98,10 @@ export default function HistoryPage() {
 
         {feedbacks.length === 0 ? (
           <div className="text-center py-24">
-            <div className="text-5xl mb-3">📋</div>
-            <p className="text-neutral-400">No interviews conducted yet.</p>
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto mb-4 text-neutral-500">
+              <ClipboardList size={24} />
+            </div>
+            <p className="text-neutral-300">No interviews conducted yet.</p>
             <p className="text-neutral-600 text-sm mt-1">
               Start a room and click &quot;End Interview&quot; to save feedback.
             </p>
@@ -135,9 +140,12 @@ export default function HistoryPage() {
                         <div className="text-sm text-neutral-400">{date}</div>
                         <div className="text-xs text-neutral-600">{time}</div>
                       </div>
-                      <span className="text-neutral-600">
-                        {isOpen ? "▲" : "▼"}
-                      </span>
+                      <ChevronDown
+                        size={18}
+                        className={`text-neutral-600 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
                     </div>
                   </button>
 
