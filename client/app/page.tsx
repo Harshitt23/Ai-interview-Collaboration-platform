@@ -188,6 +188,49 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* How it works */}
+        <section className="max-w-4xl mx-auto px-6 pb-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-semibold tracking-tight text-gradient">
+              How it works
+            </h2>
+            <p className="mt-3 text-neutral-500">
+              From zero to interviewing in three steps.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              {
+                n: "01",
+                t: "Create a room",
+                d: "Open an interview room and share the invite link with your candidate.",
+              },
+              {
+                n: "02",
+                t: "Code together live",
+                d: "Load a problem, write code in the shared editor, and run it instantly.",
+              },
+              {
+                n: "03",
+                t: "Review & rate",
+                d: "End the session and save structured feedback to your history.",
+              },
+            ].map((s) => (
+              <div
+                key={s.n}
+                className="relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6"
+              >
+                <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-violet-500 mb-3">
+                  {s.n}
+                </div>
+                <h3 className="font-medium mb-1.5">{s.t}</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Features */}
         <section className="max-w-5xl mx-auto px-6 pb-28">
           <div className="text-center mb-14">

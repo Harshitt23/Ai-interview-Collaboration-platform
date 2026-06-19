@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
+import { getSocket } from "@/lib/socket";
 import { v4 as uuidv4 } from "uuid";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
@@ -103,12 +104,36 @@ export default function DashboardPage() {
   };
 
   const handleJoinRoom = () => {
-    if (!joinId.trim()) {
+    const id = joinId.trim();
+    if (!id) {
       toast.error("Please paste a room ID to join.");
       return;
     }
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRe.test(id)) {
+      toast.error("Invalid Room ID — check the link and try again.");
+      return;
+    }
+
     setIsJoining(true);
-    router.push(`/room/${joinId.trim()}`);
+    const socket = getSocket();
+    socket
+      .timeout(8000)
+      .emit(
+        "check-room",
+        { roomId: id },
+        (err: unknown, res: { exists: boolean } | undefined) => {
+          if (err || !res?.exists) {
+            setIsJoining(false);
+            toast.error(
+              "Room not found — ask your interviewer for a fresh link."
+            );
+            return;
+          }
+          router.push(`/room/${id}`);
+        }
+      );
   };
 
   if (isLoading) {

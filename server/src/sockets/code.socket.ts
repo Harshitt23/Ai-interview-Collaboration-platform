@@ -317,6 +317,11 @@ export const registerCodeSocket = (io: Server) => {
       });
     });
 
+    socket.on("check-room", ({ roomId }: JoinRoomPayload, callback?: (res: { exists: boolean }) => void) => {
+      const room = io.sockets.adapter.rooms.get(roomId);
+      callback?.({ exists: !!room && room.size > 0 });
+    });
+
     socket.on("leave-room", ({ roomId }: JoinRoomPayload) => {
       socket.leave(roomId);
       socket.to(roomId).emit("user-left", { socketId: socket.id });
