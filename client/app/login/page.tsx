@@ -27,8 +27,8 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Invalid email or password.";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Invalid email or password.";
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -36,122 +36,81 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0f0f0f",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        style={{
-          background: "#1a1a1a",
-          border: "1px solid #2d2d2d",
-          borderRadius: "12px",
-          padding: "40px",
-          width: "100%",
-          maxWidth: "400px",
-          color: "#fff",
-        }}
-      >
-        <h1 style={{ margin: "0 0 6px", fontSize: "22px" }}>Welcome back</h1>
-        <p style={{ margin: "0 0 28px", fontSize: "13px", color: "#666" }}>
-          Sign in to your account
-        </p>
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+      {/* Background glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-3xl" />
+      </div>
 
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ fontSize: "12px", color: "#888", display: "block", marginBottom: "6px" }}>
-            EMAIL
-          </label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            style={{
-              width: "100%",
-              background: "#0f0f0f",
-              color: "#fff",
-              border: "1px solid #333",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "24px" }}>
-          <label style={{ fontSize: "12px", color: "#888", display: "block", marginBottom: "6px" }}>
-            PASSWORD
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            style={{
-              width: "100%",
-              background: "#0f0f0f",
-              color: "#fff",
-              border: "1px solid #333",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-
-        {error && (
-          <div
-            style={{
-              background: "#2d1515",
-              border: "1px solid #5c1f1f",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              fontSize: "13px",
-              color: "#f87171",
-              marginBottom: "16px",
-            }}
-          >
-            {error}
+      <div className="relative w-full max-w-sm">
+        {/* Logo */}
+        <div className="flex items-center gap-2 justify-center mb-8">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+            AI
           </div>
-        )}
+          <span className="text-white font-semibold text-lg tracking-tight">
+            InterviewLab
+          </span>
+        </div>
 
-        <button
-          onClick={handleLogin}
-          disabled={isLoading}
-          style={{
-            width: "100%",
-            background: isLoading ? "#2d2d2d" : "#4f46e5",
-            color: isLoading ? "#666" : "#fff",
-            border: "none",
-            borderRadius: "8px",
-            padding: "11px",
-            fontSize: "14px",
-            fontWeight: "bold",
-            cursor: isLoading ? "not-allowed" : "pointer",
-          }}
-        >
-          {isLoading ? "Signing in…" : "Sign in"}
-        </button>
+        {/* Card */}
+        <div className="bg-[#111111] border border-white/[0.08] rounded-2xl p-8 shadow-2xl">
+          <h1 className="text-white text-xl font-semibold mb-1">Welcome back</h1>
+          <p className="text-neutral-500 text-sm mb-7">
+            Sign in to continue to your dashboard
+          </p>
 
-        <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "#555" }}>
-          Don&apos;t have an account?{" "}
-          <a
-            href="/signup"
-            style={{ color: "#818cf8", textDecoration: "none" }}
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-neutral-500 font-medium uppercase tracking-wider block mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="w-full bg-white/[0.04] border border-white/[0.08] text-white placeholder-neutral-600 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-neutral-500 font-medium uppercase tracking-wider block mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="w-full bg-white/[0.04] border border-white/[0.08] text-white placeholder-neutral-600 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/20 rounded-lg px-3.5 py-2.5 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={handleLogin}
+            disabled={isLoading}
+            className="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/[0.06] disabled:text-neutral-600 text-white font-semibold rounded-lg py-2.5 text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
-            Sign up
-          </a>
-        </p>
+            {isLoading ? "Signing in…" : "Sign in"}
+          </button>
+
+          <p className="text-center mt-5 text-sm text-neutral-600">
+            Don&apos;t have an account?{" "}
+            <a href="/signup" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+              Sign up
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
