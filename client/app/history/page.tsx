@@ -77,7 +77,7 @@ export default function HistoryPage() {
 
       {/* Top nav */}
       <nav className="relative border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
-        <Logo />
+        <Logo href="/dashboard" />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button

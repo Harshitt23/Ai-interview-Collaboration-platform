@@ -349,6 +349,25 @@ export default function RoomPage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <button
+            onClick={() => router.push("/dashboard")}
+            title="Back to dashboard"
+            aria-label="Back to dashboard"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "12px",
+              background: "#2d2d2d",
+              color: "#ddd",
+              border: "none",
+              padding: "5px 10px",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            ← Dashboard
+          </button>
           <span style={{ fontWeight: "bold" }}>Room: {roomId?.slice(0, 8)}…</span>
           {interviewState === "active" && (
             <span

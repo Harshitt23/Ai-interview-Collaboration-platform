@@ -104,6 +104,15 @@ html.light .text-black { color: #ffffff !important; }
 html.light .hover\:bg-neutral-200:hover { background-color: #2a2b35 !important; }
 /* Dividers */
 html.light .divide-white\/\[0\.05\] > * + * { border-color: rgba(0, 0, 0, 0.07) !important; }
+/* Popovers (toast + user menu) that are hardcoded dark -> light, so dark text reads */
+html.light .bg-\[\#15131f\]\/95 { background-color: rgba(255, 255, 255, 0.96) !important; }
+/* Full-screen loading background */
+html.light .bg-\[\#0a0a0a\] { background-color: #f7f8fc !important; }
+/* Landing code-editor mock stays dark by design — keep its text readable */
+html.light .bg-\[\#0d0d0d\] .text-white { color: #e5e7eb !important; }
+html.light .bg-\[\#0d0d0d\] .text-neutral-300,
+html.light .bg-\[\#0d0d0d\] .text-neutral-400,
+html.light .bg-\[\#0d0d0d\] .text-neutral-500 { color: #9aa0ac !important; }
 
 /* Visible keyboard focus for all interactive elements */
 :focus-visible {
