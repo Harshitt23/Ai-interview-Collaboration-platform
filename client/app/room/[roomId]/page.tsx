@@ -113,7 +113,12 @@ export default function RoomPage() {
     socket.emit(
       "join-room",
       { roomId },
-      (payload: { code: string | null; problem: Problem | null; timer: { startedAt: number; duration: number } | null }) => {
+      (payload: {
+        code: string | null;
+        problem: Problem | null;
+        timer: { startedAt: number; duration: number } | null;
+        participants?: string[];
+      }) => {
         if (payload.code) setCode(payload.code);
         if (payload.problem) {
           setProblem(payload.problem);
@@ -122,10 +127,10 @@ export default function RoomPage() {
         if (payload.timer) {
           startTimer(payload.timer.startedAt, payload.timer.duration);
         }
+        const self = socket.id ?? "you";
+        setParticipants([...(payload.participants ?? []), self]);
       }
     );
-
-    setParticipants((prev) => [...prev, socket.id ?? "you"]);
 
     socket.on("user-joined", ({ socketId }: { socketId: string }) => {
       setParticipants((prev) =>
@@ -269,7 +274,41 @@ export default function RoomPage() {
           flexShrink: 0,
         }}
       >
-        <span style={{ fontWeight: "bold" }}>Room: {roomId?.slice(0, 8)}…</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontWeight: "bold" }}>Room: {roomId?.slice(0, 8)}…</span>
+          {interviewState === "active" && (
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: "bold",
+                padding: "2px 8px",
+                borderRadius: "999px",
+                background: isHost ? "#7c3aed33" : "#16a34a33",
+                color: isHost ? "#c4b5fd" : "#86efac",
+                border: `1px solid ${isHost ? "#7c3aed66" : "#16a34a66"}`,
+              }}
+            >
+              {isHost ? "Interviewer" : "Candidate"}
+            </span>
+          )}
+          <button
+            onClick={() => {
+              navigator.clipboard?.writeText(roomId ?? "");
+            }}
+            title="Copy room ID to share"
+            style={{
+              fontSize: "11px",
+              background: "#2d2d2d",
+              color: "#aaa",
+              border: "none",
+              padding: "3px 8px",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            ⧉ Copy ID
+          </button>
+        </div>
 
         {timeLeft !== null && (
           <span
@@ -698,13 +737,51 @@ export default function RoomPage() {
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: "48px", marginBottom: "12px" }}>✅</div>
                   <h2 style={{ margin: "0 0 8px" }}>Feedback Submitted</h2>
-                  <p style={{ color: "#888", margin: 0 }}>The session has been recorded.</p>
+                  <p style={{ color: "#888", margin: "0 0 24px" }}>
+                    The session has been recorded. You can view it anytime in your
+                    history.
+                  </p>
+                  <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                    <button
+                      onClick={() => router.push("/dashboard")}
+                      style={{
+                        background: "#4f46e5",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "8px",
+                        padding: "10px 18px",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Back to Dashboard
+                    </button>
+                    <button
+                      onClick={() => router.push("/history")}
+                      style={{
+                        background: "#2d2d2d",
+                        color: "#ddd",
+                        border: "none",
+                        borderRadius: "8px",
+                        padding: "10px 18px",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      View History
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
                   <h2 style={{ margin: "0 0 4px", fontSize: "20px" }}>Interview Ended</h2>
                   <p style={{ color: "#888", fontSize: "13px", marginTop: 0, marginBottom: "24px" }}>
-                    Leave feedback for this session
+                    As the interviewer, rate the candidate&apos;s performance.{" "}
+                    <span style={{ color: "#666" }}>
+                      (Testing alone? This is just a demo of the flow.)
+                    </span>
                   </p>
 
                   <div style={{ marginBottom: "16px" }}>
@@ -806,9 +883,24 @@ export default function RoomPage() {
             <div style={{ textAlign: "center", color: "#fff" }}>
               <div style={{ fontSize: "56px", marginBottom: "16px" }}>🏁</div>
               <h2 style={{ margin: "0 0 8px", fontSize: "24px" }}>Interview Complete</h2>
-              <p style={{ color: "#888", margin: 0 }}>
+              <p style={{ color: "#888", margin: "0 0 24px" }}>
                 The interviewer has ended the session. Good luck!
               </p>
+              <button
+                onClick={() => router.push("/dashboard")}
+                style={{
+                  background: "#4f46e5",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "10px 20px",
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Back to Dashboard
+              </button>
             </div>
           )}
         </div>

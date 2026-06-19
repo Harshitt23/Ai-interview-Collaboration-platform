@@ -299,8 +299,13 @@ export const registerCodeSocket = (io: Server) => {
 
     let currentRoom: string | null = null;
 
-    socket.on("join-room", ({ roomId }: JoinRoomPayload, callback?: (payload: { code: string | null; problem: Problem | null; timer: RoomTimer | null }) => void) => {
+    socket.on("join-room", ({ roomId }: JoinRoomPayload, callback?: (payload: { code: string | null; problem: Problem | null; timer: RoomTimer | null; participants: string[] }) => void) => {
       if (currentRoom) socket.leave(currentRoom);
+
+      // socket IDs already in the room (before this socket joins)
+      const existingRoom = io.sockets.adapter.rooms.get(roomId);
+      const existing = existingRoom ? Array.from(existingRoom) : [];
+
       socket.join(roomId);
       currentRoom = roomId;
       socket.to(roomId).emit("user-joined", { socketId: socket.id });
@@ -308,6 +313,7 @@ export const registerCodeSocket = (io: Server) => {
         code: roomCode.get(roomId) ?? null,
         problem: roomProblem.get(roomId) ?? null,
         timer: roomTimer.get(roomId) ?? null,
+        participants: existing,
       });
     });
 
