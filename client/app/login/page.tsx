@@ -52,7 +52,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white/30 backdrop-blur-xl border border-white/8 rounded-2xl p-8 shadow-2xl shadow-black/40">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl shadow-black/40">
           <h1 className="text-white text-xl font-semibold mb-1">Welcome back</h1>
           <p className="text-neutral-500 text-sm mb-7">
             Sign in to continue to your dashboard
