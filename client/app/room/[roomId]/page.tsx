@@ -59,6 +59,7 @@ export default function RoomPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [unread, setUnread] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const isRemoteChange = useRef(false);
   const emitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -89,6 +90,13 @@ export default function RoomPage() {
   useEffect(() => {
     if (chatOpen) setUnread(0);
   }, [chatOpen]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const handleSendMessage = useCallback(() => {
     const text = chatInput.trim();
@@ -273,6 +281,9 @@ export default function RoomPage() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: "8px",
+          rowGap: "8px",
+          flexWrap: "wrap",
           padding: "8px 16px",
           background: "#1e1e1e",
           color: "#fff",
@@ -372,6 +383,7 @@ export default function RoomPage() {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
+            aria-label="Select programming language"
             style={{ background: "#2d2d2d", color: "#fff", border: "none", padding: "4px 8px" }}
           >
             <option value="javascript">JavaScript</option>
@@ -462,16 +474,18 @@ export default function RoomPage() {
       </div>
 
       {/* Main content: problem panel + editor */}
-      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: isMobile ? "column" : "row", minHeight: 0 }}>
         {/* Left: problem panel */}
         {interviewState === "active" && (
           <div
             style={{
-              width: "40%",
+              width: isMobile ? "100%" : "40%",
+              maxHeight: isMobile ? "38vh" : undefined,
               background: "#0f0f0f",
               color: "#d4d4d4",
               overflowY: "auto",
-              borderRight: "1px solid #2d2d2d",
+              borderRight: isMobile ? "none" : "1px solid #2d2d2d",
+              borderBottom: isMobile ? "1px solid #2d2d2d" : "none",
               flexShrink: 0,
             }}
           >
@@ -586,6 +600,7 @@ export default function RoomPage() {
                 <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.05em" }}>OUTPUT</span>
                 <button
                   onClick={() => setOutput(null)}
+                  aria-label="Close output panel"
                   style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "14px" }}
                 >
                   ✕
@@ -611,9 +626,11 @@ export default function RoomPage() {
         {chatOpen && (
           <div
             style={{
-              width: "280px",
+              width: isMobile ? "100%" : "280px",
+              height: isMobile ? "45vh" : "auto",
               background: "#0f0f0f",
-              borderLeft: "1px solid #2d2d2d",
+              borderLeft: isMobile ? "none" : "1px solid #2d2d2d",
+              borderTop: isMobile ? "1px solid #2d2d2d" : "none",
               display: "flex",
               flexDirection: "column",
               flexShrink: 0,
@@ -718,6 +735,7 @@ export default function RoomPage() {
               />
               <button
                 onClick={handleSendMessage}
+                aria-label="Send message"
                 style={{
                   background: "#4f46e5",
                   color: "#fff",
@@ -745,7 +763,9 @@ export default function RoomPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            padding: "16px",
             zIndex: 50,
+            overflowY: "auto",
           }}
         >
           {isHost ? (
@@ -753,8 +773,9 @@ export default function RoomPage() {
               style={{
                 background: "#1e1e1e",
                 borderRadius: "12px",
-                padding: "36px",
-                width: "480px",
+                padding: isMobile ? "24px" : "36px",
+                width: "100%",
+                maxWidth: "480px",
                 color: "#fff",
               }}
             >

@@ -57,6 +57,17 @@ body {
   animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Visible keyboard focus for all interactive elements */
+:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Don't show the ring for mouse clicks, only keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Fine grid background pattern */
 .bg-grid {
   background-image: linear-gradient(
