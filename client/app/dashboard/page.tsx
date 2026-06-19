@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { v4 as uuidv4 } from "uuid";
 import Logo from "@/components/Logo";
+import Aurora from "@/components/Aurora";
 import { Plus, LogIn, History, ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
@@ -47,9 +48,8 @@ export default function DashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white relative">
-      <div className="absolute inset-0 bg-grid mask-radial pointer-events-none" />
-      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-app text-white relative">
+      <Aurora />
 
       {/* Top nav */}
       <nav className="relative border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
@@ -71,7 +71,7 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="relative max-w-3xl mx-auto px-6 py-16">
+      <main className="relative max-w-3xl mx-auto px-6 py-16 animate-fade-up">
         {/* Greeting */}
         <div className="mb-10">
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -85,8 +85,8 @@ export default function DashboardPage() {
         {/* Cards */}
         <div className="grid sm:grid-cols-2 gap-4">
           {/* Create */}
-          <div className="group bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-6 flex flex-col transition-all">
-            <div className="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
+          <div className="group bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.08] hover:border-indigo-500/30 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 backdrop-blur-sm">
+            <div className="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
               <Plus size={20} />
             </div>
             <h2 className="font-semibold mb-1">Create a Room</h2>
@@ -96,19 +96,19 @@ export default function DashboardPage() {
             </p>
             <button
               onClick={handleCreateRoom}
-              className="group/btn inline-flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg py-2.5 text-sm transition-colors cursor-pointer shadow-lg shadow-indigo-600/20"
+              className="group/btn inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-medium rounded-lg py-2.5 text-sm transition-all duration-300 cursor-pointer shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
             >
               Create Room
               <ArrowRight
                 size={16}
-                className="group-hover/btn:translate-x-0.5 transition-transform"
+                className="group-hover/btn:translate-x-1 transition-transform duration-300"
               />
             </button>
           </div>
 
           {/* Join */}
-          <div className="group bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-6 flex flex-col transition-all">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
+          <div className="group bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.08] hover:border-emerald-500/30 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 backdrop-blur-sm">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
               <LogIn size={19} />
             </div>
             <h2 className="font-semibold mb-1">Join a Room</h2>

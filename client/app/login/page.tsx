@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useAuthStore } from "@/lib/store/authStore";
 import Logo from "@/components/Logo";
+import Aurora from "@/components/Aurora";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,19 +38,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-grid mask-radial pointer-events-none" />
-      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-indigo-600/15 rounded-full blur-[110px] pointer-events-none" />
+    <div className="min-h-screen bg-app flex items-center justify-center px-4">
+      <Aurora />
 
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-sm animate-fade-up">
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Logo size="md" />
         </div>
 
         {/* Card */}
-        <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-2xl shadow-black/40">
+        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-2xl shadow-black/40">
           <h1 className="text-white text-xl font-semibold mb-1">Welcome back</h1>
           <p className="text-neutral-500 text-sm mb-7">
             Sign in to continue to your dashboard
@@ -94,7 +93,7 @@ export default function LoginPage() {
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/[0.06] disabled:text-neutral-600 text-white font-semibold rounded-lg py-2.5 text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
+            className="mt-6 w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:from-white/[0.06] disabled:to-white/[0.06] disabled:text-neutral-600 text-white font-semibold rounded-lg py-2.5 text-sm transition-all duration-300 cursor-pointer disabled:cursor-not-allowed shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
           >
             {isLoading ? "Signing in…" : "Sign in"}
           </button>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import Aurora from "@/components/Aurora";
 import {
   Code2,
   Sparkles,
@@ -51,10 +52,8 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
-      {/* Background layers */}
-      <div className="absolute inset-0 bg-grid mask-radial pointer-events-none" />
-      <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-app text-white overflow-x-hidden">
+      <Aurora />
 
       <div className="relative">
         {/* Nav */}
@@ -107,12 +106,12 @@ export default function LandingPage() {
           >
             <Link
               href="/signup"
-              className="group inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-3 rounded-xl transition-colors shadow-lg shadow-indigo-600/25"
+              className="group inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-medium px-5 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-violet-600/30 hover:shadow-violet-500/50 hover:-translate-y-0.5"
             >
               Start interviewing
               <ArrowRight
                 size={17}
-                className="group-hover:translate-x-0.5 transition-transform"
+                className="group-hover:translate-x-1 transition-transform duration-300"
               />
             </Link>
             <Link

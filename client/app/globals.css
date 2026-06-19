@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
+  --background: #0a0913;
   --foreground: #ededed;
 }
 
@@ -13,9 +13,40 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(900px 600px at 15% -5%, rgba(99, 102, 241, 0.12), transparent 60%),
+    radial-gradient(800px 600px at 85% 0%, rgba(168, 85, 247, 0.1), transparent 55%),
+    linear-gradient(180deg, #0b0a16 0%, #08070f 100%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* App background helper (transparent so body gradient shows) */
+.bg-app {
+  background: transparent;
+}
+
+/* Animated aurora blobs */
+@keyframes aurora-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 40px) scale(1.15); }
+}
+@keyframes aurora-2 {
+  0%, 100% { transform: translate(0, 0) scale(1.1); }
+  50% { transform: translate(-50px, 30px) scale(1); }
+}
+@keyframes aurora-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -40px) scale(1.2); }
+}
+.aurora-1 { animation: aurora-1 18s ease-in-out infinite; }
+.aurora-2 { animation: aurora-2 22s ease-in-out infinite; }
+.aurora-3 { animation: aurora-3 20s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* Fine grid background pattern */

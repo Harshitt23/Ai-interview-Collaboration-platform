@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import Logo from "@/components/Logo";
+import Aurora from "@/components/Aurora";
 import { ArrowLeft, ClipboardList, ChevronDown, Star } from "lucide-react";
 
 interface Feedback {
@@ -70,8 +71,8 @@ export default function HistoryPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white relative">
-      <div className="absolute inset-0 bg-grid mask-radial pointer-events-none" />
+    <div className="min-h-screen bg-app text-white relative">
+      <Aurora />
 
       {/* Top nav */}
       <nav className="relative border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
@@ -85,7 +86,7 @@ export default function HistoryPage() {
         </button>
       </nav>
 
-      <main className="relative max-w-2xl mx-auto px-6 py-12">
+      <main className="relative max-w-2xl mx-auto px-6 py-12 animate-fade-up">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight">
             Interview History
@@ -123,7 +124,7 @@ export default function HistoryPage() {
               return (
                 <div
                   key={f.id}
-                  className="bg-[#111111] border border-white/[0.08] rounded-xl overflow-hidden"
+                  className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] hover:border-white/[0.14] rounded-xl overflow-hidden transition-all duration-300"
                 >
                   <button
                     onClick={() => setExpanded(isOpen ? null : f.id)}
