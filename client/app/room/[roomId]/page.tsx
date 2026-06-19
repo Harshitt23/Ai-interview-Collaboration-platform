@@ -7,6 +7,7 @@ import Editor from "@monaco-editor/react";
 import { getSocket } from "@/lib/socket";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useToast } from "@/components/Toast";
+import { logActivity } from "@/lib/activity";
 
 const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
 
@@ -171,6 +172,7 @@ export default function RoomPage() {
     socket.on("interview-ended", () => {
       setInterviewState("ended");
       if (timerInterval.current) clearInterval(timerInterval.current);
+      logActivity("interview_completed", "Completed an interview");
     });
 
     socket.on("chat-message", ({ socketId, text }: { socketId: string; text: string }) => {
@@ -257,6 +259,7 @@ export default function RoomPage() {
         body: JSON.stringify({ roomId, ...feedback }),
       });
       setFeedbackSubmitted(true);
+      logActivity("feedback_submitted", "Submitted interview feedback");
       toast.success("Feedback submitted and saved to history.");
     } catch {
       toast.error("Couldn't submit feedback. Please try again.");

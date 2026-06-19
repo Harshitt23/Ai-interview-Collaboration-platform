@@ -7,7 +7,14 @@ import { v4 as uuidv4 } from "uuid";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
 import UserMenu from "@/components/UserMenu";
+import Counter from "@/components/Counter";
 import { useToast } from "@/components/Toast";
+import {
+  logActivity,
+  getActivity,
+  timeAgo,
+  type Activity,
+} from "@/lib/activity";
 import {
   Plus,
   LogIn,
@@ -16,11 +23,25 @@ import {
   ClipboardList,
   Star,
   DoorOpen,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
 
 interface Feedback {
   rating: number;
 }
+
+const activityMeta: Record<
+  Activity["type"],
+  { icon: typeof DoorOpen; color: string }
+> = {
+  room_created: { icon: DoorOpen, color: "text-indigo-400 bg-indigo-500/10" },
+  feedback_submitted: { icon: Star, color: "text-amber-400 bg-amber-500/10" },
+  interview_completed: {
+    icon: CheckCircle2,
+    color: "text-emerald-400 bg-emerald-500/10",
+  },
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -33,6 +54,7 @@ export default function DashboardPage() {
   const [totalInterviews, setTotalInterviews] = useState<number | null>(null);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [roomsCreated, setRoomsCreated] = useState(0);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     hydrate();
@@ -48,6 +70,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     setRoomsCreated(Number(localStorage.getItem("roomsCreated") || "0"));
+    setActivities(getActivity());
 
     const token = localStorage.getItem("token");
     fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/feedback`, {
@@ -73,8 +96,9 @@ export default function DashboardPage() {
     setIsCreating(true);
     const next = roomsCreated + 1;
     localStorage.setItem("roomsCreated", String(next));
-    toast.success("Room created! Share the link with your candidate.");
     const roomId = uuidv4();
+    logActivity("room_created", `Created room #${roomId.slice(0, 6)}`);
+    toast.success("Room created! Share the link with your candidate.");
     router.push(`/room/${roomId}`);
   };
 
@@ -99,19 +123,29 @@ export default function DashboardPage() {
   const stats = [
     {
       label: "Total Interviews",
-      value: totalInterviews ?? "—",
+      node:
+        totalInterviews === null ? (
+          "—"
+        ) : (
+          <Counter value={totalInterviews} />
+        ),
       icon: ClipboardList,
       color: "text-indigo-400 bg-indigo-500/10",
     },
     {
       label: "Average Rating",
-      value: avgRating !== null ? `${avgRating.toFixed(1)} ★` : "—",
+      node:
+        avgRating === null ? (
+          "—"
+        ) : (
+          <Counter value={avgRating} decimals={1} suffix=" ★" />
+        ),
       icon: Star,
       color: "text-amber-400 bg-amber-500/10",
     },
     {
       label: "Rooms Created",
-      value: roomsCreated,
+      node: <Counter value={roomsCreated} />,
       icon: DoorOpen,
       color: "text-emerald-400 bg-emerald-500/10",
     },
@@ -151,7 +185,7 @@ export default function DashboardPage() {
                 <s.icon size={17} />
               </div>
               <div className="text-xl sm:text-2xl font-semibold tabular-nums">
-                {s.value}
+                {s.node}
               </div>
               <div className="text-[11px] sm:text-xs text-neutral-500 mt-0.5">
                 {s.label}
@@ -228,6 +262,75 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* How it works (onboarding) */}
+        <div className="mt-8 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+          <h3 className="text-sm font-semibold text-neutral-300 mb-4">
+            How it works
+          </h3>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              {
+                n: 1,
+                t: "Create a room",
+                d: "Open a room and copy the invite link.",
+              },
+              {
+                n: 2,
+                t: "Start the interview",
+                d: "Load a problem and code together live.",
+              },
+              {
+                n: 3,
+                t: "Give feedback",
+                d: "End the session and rate the candidate.",
+              },
+            ].map((step) => (
+              <div key={step.n} className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-bold flex items-center justify-center">
+                  {step.n}
+                </span>
+                <div>
+                  <div className="text-sm font-medium">{step.t}</div>
+                  <div className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
+                    {step.d}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        {activities.length > 0 && (
+          <div className="mt-8">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-neutral-300 mb-3">
+              <Clock size={15} className="text-neutral-500" />
+              Recent Activity
+            </h3>
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.05]">
+              {activities.map((a, i) => {
+                const meta = activityMeta[a.type];
+                const Icon = meta.icon;
+                return (
+                  <div key={i} className="flex items-center gap-3 px-4 py-3">
+                    <span
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${meta.color}`}
+                    >
+                      <Icon size={15} />
+                    </span>
+                    <span className="text-sm text-neutral-300 flex-1">
+                      {a.label}
+                    </span>
+                    <span className="text-xs text-neutral-600">
+                      {timeAgo(a.at)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
