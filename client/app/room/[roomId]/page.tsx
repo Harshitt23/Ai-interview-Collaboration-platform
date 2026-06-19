@@ -39,6 +39,41 @@ const difficultyColor: Record<string, string> = {
   Hard: "#ef4444",
 };
 
+// Topic tags per problem (by title) — rendered as colored badges
+const problemTags: Record<string, string[]> = {
+  "Two Sum": ["Array", "Hash Table"],
+  "Longest Substring Without Repeating Characters": ["String", "Sliding Window"],
+  "Valid Parentheses": ["String", "Stack"],
+  "Maximum Subarray": ["Array", "DP"],
+  "Climbing Stairs": ["DP"],
+  "Merge Intervals": ["Array", "Sorting"],
+  "Binary Search": ["Array", "Binary Search"],
+  "Number of Islands": ["Graph", "DFS"],
+  "Coin Change": ["DP"],
+  "Reverse Linked List": ["Linked List"],
+  "Validate Binary Search Tree": ["Tree", "DFS"],
+  "3Sum": ["Array", "Two Pointers"],
+  "Word Search": ["Backtracking", "Matrix"],
+  "Longest Common Subsequence": ["String", "DP"],
+  "Trapping Rain Water": ["Array", "Two Pointers"],
+  "Median of Two Sorted Arrays": ["Array", "Binary Search"],
+};
+
+const tagPalette = [
+  { bg: "#4f46e533", fg: "#a5b4fc" },
+  { bg: "#0891b233", fg: "#67e8f9" },
+  { bg: "#16a34a33", fg: "#86efac" },
+  { bg: "#d9770633", fg: "#fcd34d" },
+  { bg: "#db277733", fg: "#f9a8d4" },
+  { bg: "#7c3aed33", fg: "#c4b5fd" },
+];
+
+const tagColor = (tag: string) => {
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) >>> 0;
+  return tagPalette[h % tagPalette.length];
+};
+
 export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const router = useRouter();
@@ -61,7 +96,9 @@ export default function RoomPage() {
   const [chatInput, setChatInput] = useState("");
   const [unread, setUnread] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [hintDismissed, setHintDismissed] = useState(false);
   const isRemoteChange = useRef(false);
+  const runRef = useRef<() => void>(() => {});
   const emitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -97,6 +134,23 @@ export default function RoomPage() {
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Keep a ref to the latest run handler for the keyboard shortcut
+  useEffect(() => {
+    runRef.current = handleRunCode;
+  });
+
+  // Ctrl/Cmd + Enter → Run code
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        runRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   const handleSendMessage = useCallback(() => {
@@ -215,6 +269,7 @@ export default function RoomPage() {
   };
 
   const handleRunCode = async () => {
+    if (isRunning) return;
     setIsRunning(true);
     setOutput("Running...");
     try {
@@ -399,6 +454,8 @@ export default function RoomPage() {
           <button
             onClick={handleRunCode}
             disabled={isRunning}
+            title="Run code (Ctrl+Enter)"
+            aria-label="Run code, shortcut Control or Command plus Enter"
             style={{
               background: isRunning ? "#555" : "#16a34a",
               color: "#fff",
@@ -410,6 +467,9 @@ export default function RoomPage() {
             }}
           >
             {isRunning ? "Running..." : "▶ Run"}
+            <span style={{ fontSize: "10px", opacity: 0.7, marginLeft: "6px", fontWeight: 400 }}>
+              ⌘↵
+            </span>
           </button>
 
           <button
@@ -498,15 +558,35 @@ export default function RoomPage() {
                   <h2 style={{ margin: "0 0 6px", fontSize: "18px", color: "#fff" }}>
                     {problem.title}
                   </h2>
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      color: difficultyColor[problem.difficulty] ?? "#888",
-                    }}
-                  >
-                    {problem.difficulty}
-                  </span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        color: difficultyColor[problem.difficulty] ?? "#888",
+                      }}
+                    >
+                      {problem.difficulty}
+                    </span>
+                    {(problemTags[problem.title] ?? []).map((tag) => {
+                      const c = tagColor(tag);
+                      return (
+                        <span
+                          key={tag}
+                          style={{
+                            fontSize: "10px",
+                            fontWeight: 600,
+                            padding: "2px 8px",
+                            borderRadius: "999px",
+                            background: c.bg,
+                            color: c.fg,
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <p style={{ lineHeight: 1.6, marginBottom: "20px", color: "#ccc" }}>
@@ -563,6 +643,36 @@ export default function RoomPage() {
 
         {/* Right: editor */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+          {interviewState === "idle" && !hintDismissed && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 14px",
+                background: "#1a1726",
+                borderBottom: "1px solid #2d2d2d",
+                color: "#c4b5fd",
+                fontSize: "13px",
+                flexShrink: 0,
+              }}
+            >
+              <span>👋</span>
+              <span style={{ flex: 1, color: "#cbd5e1" }}>
+                New here? Click{" "}
+                <strong style={{ color: "#c4b5fd" }}>🎯 Start Interview</strong>{" "}
+                to load a problem, or{" "}
+                <strong style={{ color: "#c4b5fd" }}>⧉ Copy Link</strong> to invite a candidate.
+              </span>
+              <button
+                onClick={() => setHintDismissed(true)}
+                aria-label="Dismiss hint"
+                style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "14px" }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <div style={{ flex: 1, minHeight: 0 }}>
             <Editor
               height="100%"
