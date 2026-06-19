@@ -9,7 +9,6 @@ interface AuthRequest extends Request {
 }
 
 export const signup = async (req: Request, res: Response) => {
-  console.log("signup hit", req.body);
   try {
     const { name, email, password } = req.body;
 
@@ -49,7 +48,7 @@ export const signup = async (req: Request, res: Response) => {
       user,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,
@@ -111,7 +110,7 @@ export const login = async (req: Request, res: Response) => {
       user,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,
@@ -145,7 +144,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
       user,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,

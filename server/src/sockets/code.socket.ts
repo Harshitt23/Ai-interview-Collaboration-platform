@@ -295,7 +295,7 @@ const roomTimer = new Map<string, RoomTimer>();
 
 export const registerCodeSocket = (io: Server) => {
   io.on("connection", (socket: Socket) => {
-    console.log("Socket connected:", socket.id);
+    console.log(`[socket] connected: ${socket.id}`);
 
     let currentRoom: string | null = null;
 
@@ -347,7 +347,7 @@ export const registerCodeSocket = (io: Server) => {
     });
 
     socket.on("disconnect", () => {
-      console.log("Socket disconnected:", socket.id);
+      console.log(`[socket] disconnected: ${socket.id}`);
       if (currentRoom) {
         socket.to(currentRoom).emit("user-left", { socketId: socket.id });
       }
