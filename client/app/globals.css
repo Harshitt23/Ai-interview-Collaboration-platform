@@ -57,6 +57,54 @@ body {
   animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ===== Light theme (html.light) — scoped remap of the app palette =====
+   The app is dark-first; light mode remaps the small, consistent set of
+   utilities it uses. The coding room (inline-styled) intentionally stays dark. */
+html.light body {
+  background:
+    radial-gradient(900px 600px at 15% -5%, rgba(99, 102, 241, 0.1), transparent 60%),
+    radial-gradient(800px 600px at 85% 0%, rgba(168, 85, 247, 0.08), transparent 55%),
+    linear-gradient(180deg, #f7f8fc 0%, #eceef5 100%);
+  color-scheme: light;
+}
+html.light .bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+}
+html.light .text-gradient {
+  background: linear-gradient(180deg, #18181b 0%, #4b5563 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+/* Text */
+html.light .text-white { color: #1a1a24 !important; }
+html.light .text-neutral-100 { color: #1f2029 !important; }
+html.light .text-neutral-200 { color: #2a2b35 !important; }
+html.light .text-neutral-300 { color: #3f404a !important; }
+html.light .text-neutral-400 { color: #52525b !important; }
+html.light .text-neutral-500 { color: #6b7280 !important; }
+html.light .text-neutral-600 { color: #98a0ad !important; }
+/* Translucent surfaces */
+html.light .bg-white\/\[0\.02\] { background-color: rgba(255, 255, 255, 0.55) !important; }
+html.light .bg-white\/\[0\.03\] { background-color: rgba(255, 255, 255, 0.7) !important; }
+html.light .bg-white\/\[0\.04\] { background-color: rgba(0, 0, 0, 0.04) !important; }
+html.light .bg-white\/\[0\.05\] { background-color: rgba(255, 255, 255, 0.85) !important; }
+html.light .bg-white\/\[0\.06\] { background-color: rgba(0, 0, 0, 0.05) !important; }
+html.light .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(255, 255, 255, 0.9) !important; }
+html.light .hover\:bg-white\/\[0\.1\]:hover { background-color: rgba(0, 0, 0, 0.08) !important; }
+/* Borders */
+html.light .border-white\/\[0\.06\] { border-color: rgba(0, 0, 0, 0.08) !important; }
+html.light .border-white\/\[0\.08\] { border-color: rgba(0, 0, 0, 0.1) !important; }
+html.light .hover\:border-white\/\[0\.14\]:hover { border-color: rgba(0, 0, 0, 0.16) !important; }
+/* Landing solid white CTA buttons -> dark, so they stay readable on light bg */
+html.light .bg-white { background-color: #1a1a24 !important; }
+html.light .text-black { color: #ffffff !important; }
+html.light .hover\:bg-neutral-200:hover { background-color: #2a2b35 !important; }
+/* Dividers */
+html.light .divide-white\/\[0\.05\] > * + * { border-color: rgba(0, 0, 0, 0.07) !important; }
+
 /* Visible keyboard focus for all interactive elements */
 :focus-visible {
   outline: 2px solid #818cf8;

@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
 import UserMenu from "@/components/UserMenu";
+import ThemeToggle from "@/components/ThemeToggle";
 import Counter from "@/components/Counter";
 import { useToast } from "@/components/Toast";
 import {
@@ -183,7 +184,10 @@ export default function DashboardPage() {
       {/* Top nav */}
       <nav className="relative border-b border-white/[0.08] px-6 py-3 flex items-center justify-between">
         <Logo />
-        <UserMenu />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </nav>
 
       <main className="relative max-w-3xl mx-auto px-6 py-12 sm:py-16 animate-fade-up">

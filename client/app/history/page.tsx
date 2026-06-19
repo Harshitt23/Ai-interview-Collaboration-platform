@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
+import ThemeToggle from "@/components/ThemeToggle";
 import { ArrowLeft, ClipboardList, ChevronDown, Star, Plus } from "lucide-react";
 
 interface Feedback {
@@ -77,13 +78,16 @@ export default function HistoryPage() {
       {/* Top nav */}
       <nav className="relative border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
         <Logo />
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="inline-flex items-center gap-1.5 text-sm bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={15} />
-          Dashboard
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="inline-flex items-center gap-1.5 text-sm bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={15} />
+            Dashboard
+          </button>
+        </div>
       </nav>
 
       <main className="relative max-w-2xl mx-auto px-6 py-12 animate-fade-up">
