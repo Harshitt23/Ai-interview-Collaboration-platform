@@ -52,7 +52,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-2xl shadow-black/40">
+        <div className="bg-white/300 backdrop-blur-xl border border-white/8 rounded-2xl p-8 shadow-2xl shadow-black/40">
           <h1 className="text-white text-xl font-semibold mb-1">Welcome back</h1>
           <p className="text-neutral-500 text-sm mb-7">
             Sign in to continue to your dashboard
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="w-full bg-white/[0.04] border border-white/[0.08] text-white placeholder-neutral-600 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/4 border border-white/8 text-white placeholder-neutral-600 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
 
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="w-full bg-white/[0.04] border border-white/[0.08] text-white placeholder-neutral-600 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/4 border border-white/8 text-white placeholder-neutral-600 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function LoginPage() {
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className="mt-6 w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:from-white/[0.06] disabled:to-white/[0.06] disabled:text-neutral-600 text-white font-semibold rounded-lg py-2.5 text-sm transition-all duration-300 cursor-pointer disabled:cursor-not-allowed shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
+            className="mt-6 w-full bg-linear-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:from-white/6 disabled:to-white/6 disabled:text-neutral-600 text-white font-semibold rounded-lg py-2.5 text-sm transition-all duration-300 cursor-pointer disabled:cursor-not-allowed shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
           >
             {isLoading ? "Signing in…" : "Sign in"}
           </button>
