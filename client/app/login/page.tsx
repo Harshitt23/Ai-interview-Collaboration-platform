@@ -6,10 +6,12 @@ import api from "@/lib/api";
 import { useAuthStore } from "@/lib/store/authStore";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
+import { useToast } from "@/components/Toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const toast = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,12 +28,14 @@ export default function LoginPage() {
     try {
       const response = await api.post("/auth/login", { email, password });
       setAuth(response.data.token, response.data.user);
+      toast.success(`Welcome back, ${response.data.user.name.split(" ")[0]}!`);
       router.push("/dashboard");
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
           ?.message || "Invalid email or password.";
       setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

@@ -49,6 +49,14 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(24px) scale(0.96); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+.animate-toast-in {
+  animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* Fine grid background pattern */
 .bg-grid {
   background-image: linear-gradient(

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Editor from "@monaco-editor/react";
 import { getSocket } from "@/lib/socket";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useToast } from "@/components/Toast";
 
 const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
 
@@ -41,6 +42,7 @@ export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const router = useRouter();
   const { user, isLoading, hydrate } = useAuthStore();
+  const toast = useToast();
   const [code, setCode] = useState("// Start coding here...");
   const [language, setLanguage] = useState("javascript");
   const [participants, setParticipants] = useState<string[]>([]);
@@ -155,7 +157,7 @@ export default function RoomPage() {
 
     socket.on("interview-error", ({ message }: { message: string }) => {
       setInterviewState("idle");
-      alert(message);
+      toast.error(message);
     });
 
     socket.on("interview-ended", () => {
@@ -247,6 +249,9 @@ export default function RoomPage() {
         body: JSON.stringify({ roomId, ...feedback }),
       });
       setFeedbackSubmitted(true);
+      toast.success("Feedback submitted and saved to history.");
+    } catch {
+      toast.error("Couldn't submit feedback. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -293,9 +298,14 @@ export default function RoomPage() {
           )}
           <button
             onClick={() => {
-              navigator.clipboard?.writeText(roomId ?? "");
+              const link = typeof window !== "undefined" ? window.location.href : "";
+              navigator.clipboard
+                ?.writeText(link)
+                .then(() => toast.success("Interview link copied to clipboard!"))
+                .catch(() => toast.error("Couldn't copy — copy it from the address bar."));
             }}
-            title="Copy room ID to share"
+            title="Copy invite link to share with your candidate"
+            aria-label="Copy interview invite link"
             style={{
               fontSize: "11px",
               background: "#2d2d2d",
@@ -306,7 +316,7 @@ export default function RoomPage() {
               cursor: "pointer",
             }}
           >
-            ⧉ Copy ID
+            ⧉ Copy Link
           </button>
         </div>
 

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
+import { useToast } from "@/components/Toast";
 
 export default function SignupPage() {
   const router = useRouter();
+  const toast = useToast();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,12 +30,14 @@ export default function SignupPage() {
     setIsLoading(true);
     try {
       await api.post("/auth/signup", { name, email, password });
+      toast.success("Account created! Please sign in.");
       router.push("/login");
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
           ?.message || "Signup failed. Please try again.";
       setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
