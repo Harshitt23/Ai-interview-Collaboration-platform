@@ -6,12 +6,33 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { v4 as uuidv4 } from "uuid";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
-import { Plus, LogIn, History, ArrowRight } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
+import { useToast } from "@/components/Toast";
+import {
+  Plus,
+  LogIn,
+  ArrowRight,
+  Loader2,
+  ClipboardList,
+  Star,
+  DoorOpen,
+} from "lucide-react";
+
+interface Feedback {
+  rating: number;
+}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading, hydrate, logout } = useAuthStore();
+  const { user, isLoading, hydrate } = useAuthStore();
+  const toast = useToast();
   const [joinId, setJoinId] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+
+  const [totalInterviews, setTotalInterviews] = useState<number | null>(null);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [roomsCreated, setRoomsCreated] = useState(0);
 
   useEffect(() => {
     hydrate();
@@ -23,63 +44,120 @@ export default function DashboardPage() {
     }
   }, [isLoading, user, router]);
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
+  // Load stats
+  useEffect(() => {
+    if (!user) return;
+    setRoomsCreated(Number(localStorage.getItem("roomsCreated") || "0"));
+
+    const token = localStorage.getItem("token");
+    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/feedback`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const list: Feedback[] = data.feedbacks ?? [];
+        setTotalInterviews(list.length);
+        setAvgRating(
+          list.length
+            ? list.reduce((s, f) => s + f.rating, 0) / list.length
+            : null
+        );
+      })
+      .catch(() => {
+        setTotalInterviews(0);
+        setAvgRating(null);
+      });
+  }, [user]);
 
   const handleCreateRoom = () => {
+    setIsCreating(true);
+    const next = roomsCreated + 1;
+    localStorage.setItem("roomsCreated", String(next));
+    toast.success("Room created! Share the link with your candidate.");
     const roomId = uuidv4();
     router.push(`/room/${roomId}`);
   };
 
   const handleJoinRoom = () => {
-    if (!joinId.trim()) return;
+    if (!joinId.trim()) {
+      toast.error("Please paste a room ID to join.");
+      return;
+    }
+    setIsJoining(true);
     router.push(`/room/${joinId.trim()}`);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-neutral-500 text-sm">
+      <div className="min-h-screen bg-app flex items-center justify-center text-neutral-500 text-sm">
         Loading…
       </div>
     );
   }
   if (!user) return null;
 
+  const stats = [
+    {
+      label: "Total Interviews",
+      value: totalInterviews ?? "—",
+      icon: ClipboardList,
+      color: "text-indigo-400 bg-indigo-500/10",
+    },
+    {
+      label: "Average Rating",
+      value: avgRating !== null ? `${avgRating.toFixed(1)} ★` : "—",
+      icon: Star,
+      color: "text-amber-400 bg-amber-500/10",
+    },
+    {
+      label: "Rooms Created",
+      value: roomsCreated,
+      icon: DoorOpen,
+      color: "text-emerald-400 bg-emerald-500/10",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-app text-white relative">
       <Aurora />
 
       {/* Top nav */}
-      <nav className="relative border-b border-white/[0.08] px-6 py-3.5 flex items-center justify-between">
+      <nav className="relative border-b border-white/[0.08] px-6 py-3 flex items-center justify-between">
         <Logo />
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.push("/history")}
-            className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white hover:bg-white/[0.04] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-          >
-            <History size={15} />
-            History
-          </button>
-          <button
-            onClick={handleLogout}
-            className="text-sm bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-          >
-            Logout
-          </button>
-        </div>
+        <UserMenu />
       </nav>
 
-      <main className="relative max-w-3xl mx-auto px-6 py-16 animate-fade-up">
+      <main className="relative max-w-3xl mx-auto px-6 py-12 sm:py-16 animate-fade-up">
         {/* Greeting */}
-        <div className="mb-10">
+        <div className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight">
             Welcome back, {user.name.split(" ")[0]}
           </h1>
           <p className="text-neutral-500 text-sm mt-1">
             Create a new interview room or join an existing one.
           </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-4 sm:p-5"
+            >
+              <div
+                className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${s.color}`}
+              >
+                <s.icon size={17} />
+              </div>
+              <div className="text-xl sm:text-2xl font-semibold tabular-nums">
+                {s.value}
+              </div>
+              <div className="text-[11px] sm:text-xs text-neutral-500 mt-0.5">
+                {s.label}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Cards */}
@@ -96,13 +174,23 @@ export default function DashboardPage() {
             </p>
             <button
               onClick={handleCreateRoom}
-              className="group/btn inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-medium rounded-lg py-2.5 text-sm transition-all duration-300 cursor-pointer shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
+              disabled={isCreating}
+              className="group/btn inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 disabled:opacity-70 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-all duration-300 cursor-pointer shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
             >
-              Create Room
-              <ArrowRight
-                size={16}
-                className="group-hover/btn:translate-x-1 transition-transform duration-300"
-              />
+              {isCreating ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Creating Room…
+                </>
+              ) : (
+                <>
+                  Create Room
+                  <ArrowRight
+                    size={16}
+                    className="group-hover/btn:translate-x-1 transition-transform duration-300"
+                  />
+                </>
+              )}
             </button>
           </div>
 
@@ -123,13 +211,19 @@ export default function DashboardPage() {
                 value={joinId}
                 onChange={(e) => setJoinId(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleJoinRoom()}
+                aria-label="Room ID to join"
                 className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.08] text-white placeholder-neutral-600 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
               />
               <button
                 onClick={handleJoinRoom}
-                className="bg-white/[0.06] hover:bg-white/[0.1] text-white font-medium rounded-lg px-4 text-sm transition-colors cursor-pointer"
+                disabled={isJoining}
+                className="inline-flex items-center gap-1.5 bg-white/[0.06] hover:bg-white/[0.1] disabled:opacity-70 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 text-sm transition-colors cursor-pointer"
               >
-                Join
+                {isJoining ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  "Join"
+                )}
               </button>
             </div>
           </div>

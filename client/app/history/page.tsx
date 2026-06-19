@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import Logo from "@/components/Logo";
 import Aurora from "@/components/Aurora";
-import { ArrowLeft, ClipboardList, ChevronDown, Star } from "lucide-react";
+import { ArrowLeft, ClipboardList, ChevronDown, Star, Plus } from "lucide-react";
 
 interface Feedback {
   id: string;
@@ -99,13 +99,22 @@ export default function HistoryPage() {
 
         {feedbacks.length === 0 ? (
           <div className="text-center py-24">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto mb-4 text-neutral-500">
-              <ClipboardList size={24} />
+            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5 text-indigo-400">
+              <ClipboardList size={26} />
             </div>
-            <p className="text-neutral-300">No interviews conducted yet.</p>
-            <p className="text-neutral-600 text-sm mt-1">
-              Start a room and click &quot;End Interview&quot; to save feedback.
+            <p className="text-neutral-200 text-lg font-medium">
+              No interviews yet
             </p>
+            <p className="text-neutral-500 text-sm mt-1.5 max-w-xs mx-auto leading-relaxed">
+              Conduct your first interview, then end it to save feedback here.
+            </p>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-all duration-300 shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40"
+            >
+              <Plus size={16} />
+              Create your first room
+            </button>
           </div>
         ) : (
           <div className="flex flex-col gap-3">

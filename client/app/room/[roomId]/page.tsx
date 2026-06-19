@@ -643,9 +643,24 @@ export default function RoomPage() {
               }}
             >
               {messages.length === 0 && (
-                <span style={{ color: "#444", fontSize: "12px", textAlign: "center", marginTop: "12px" }}>
-                  No messages yet
-                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                    marginTop: "32px",
+                    padding: "0 16px",
+                  }}
+                >
+                  <div style={{ fontSize: "28px", marginBottom: "8px", opacity: 0.5 }}>💬</div>
+                  <span style={{ color: "#888", fontSize: "13px", fontWeight: 600 }}>
+                    No messages yet
+                  </span>
+                  <span style={{ color: "#555", fontSize: "12px", marginTop: "4px", lineHeight: 1.5 }}>
+                    Start collaborating with your candidate.
+                  </span>
+                </div>
               )}
               {messages.map((msg, i) => (
                 <div
