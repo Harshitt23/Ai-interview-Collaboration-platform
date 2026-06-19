@@ -144,7 +144,7 @@ export default function LoginPage() {
         </button>
 
         <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "#555" }}>
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a
             href="/signup"
             style={{ color: "#818cf8", textDecoration: "none" }}
