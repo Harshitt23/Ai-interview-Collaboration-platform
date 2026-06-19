@@ -115,6 +115,8 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Server error",
+      // TEMP debug — remove after diagnosing prod 500
+      debug: error instanceof Error ? error.message : String(error),
     });
   }
 };

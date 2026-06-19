@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import authRoutes from "./routes/auth.routes";
 import feedbackRoutes from "./routes/feedback.routes";
 import { registerCodeSocket } from "./sockets/code.socket";
+import prisma from "./utils/prisma";
 
 const app = express();
 
@@ -48,6 +49,23 @@ app.use("/api/feedback", feedbackRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running...");
+});
+
+// Diagnostic: checks DB connectivity + required env vars
+app.get("/api/health", async (req, res) => {
+  const report: Record<string, unknown> = {
+    jwtSecretSet: !!process.env.JWT_SECRET,
+    databaseUrlSet: !!process.env.DATABASE_URL,
+  };
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    report.db = "connected";
+    res.json({ ok: true, ...report });
+  } catch (error) {
+    report.db = "error";
+    report.dbError = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ ok: false, ...report });
+  }
 });
 
 const httpServer = createServer(app);
