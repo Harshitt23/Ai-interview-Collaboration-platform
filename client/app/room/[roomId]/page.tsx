@@ -118,9 +118,46 @@ export default function RoomPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    if (chatOpen) setUnread(0);
-  }, [chatOpen]);
+  const handleRunCode = () => {
+    if (isRunning) return;
+    setIsRunning(true);
+    setOutputStatus(null);
+    setOutput("Running…");
+
+    setTimeout(() => {
+      if (language !== "javascript" && language !== "typescript") {
+        setOutputStatus(null);
+        setOutput("Live execution supports JavaScript only.\nSwitch the language to JavaScript to run your code.");
+        setIsRunning(false);
+        return;
+      }
+
+      const logs: string[] = [];
+      const _log = console.log;
+      const _warn = console.warn;
+      const _error = console.error;
+      console.log = (...args: unknown[]) => logs.push(args.map(String).join(" "));
+      console.warn = (...args: unknown[]) => logs.push("[warn] " + args.map(String).join(" "));
+      console.error = (...args: unknown[]) => logs.push("[error] " + args.map(String).join(" "));
+
+      try {
+        const fn = new Function(code);
+        const result = fn();
+        if (result !== undefined && logs.length === 0) logs.push(String(result));
+        const hasErrorLog = logs.some((l) => l.startsWith("[error]"));
+        setOutputStatus(hasErrorLog ? "error" : "success");
+        setOutput(logs.join("\n") || "(no output)\n\nTip: use console.log() to print results.\nE.g. console.log(twoSum([2,7,11,15], 9))");
+      } catch (e) {
+        setOutputStatus("error");
+        setOutput(e instanceof Error ? e.message : String(e));
+      } finally {
+        console.log = _log;
+        console.warn = _warn;
+        console.error = _error;
+        setIsRunning(false);
+      }
+    }, 30);
+  };
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -243,7 +280,7 @@ export default function RoomPage() {
       socket.off("interview-ended");
       socket.off("chat-message");
     };
-  }, [roomId, user]);
+  }, [roomId, user, toast]);
 
   const handleEditorChange = (value: string | undefined) => {
     const newCode = value ?? "";
@@ -259,52 +296,6 @@ export default function RoomPage() {
     emitTimeout.current = setTimeout(() => {
       getSocket().emit("code-change", { roomId, code: newCode });
     }, 300);
-  };
-
-  const handleRunCode = () => {
-    if (isRunning) return;
-    setIsRunning(true);
-    setOutputStatus(null); // reset status at the start of every run
-    setOutput("Running…");
-
-    setTimeout(() => {
-      if (language !== "javascript" && language !== "typescript") {
-        setOutputStatus(null);
-        setOutput("Live execution supports JavaScript only.\nSwitch the language to JavaScript to run your code.");
-        setIsRunning(false);
-        return;
-      }
-
-      const logs: string[] = [];
-      const _log = console.log;
-      const _warn = console.warn;
-      const _error = console.error;
-      // eslint-disable-next-line no-console
-      console.log = (...args: unknown[]) => logs.push(args.map(String).join(" "));
-      // eslint-disable-next-line no-console
-      console.warn = (...args: unknown[]) => logs.push("[warn] " + args.map(String).join(" "));
-      // eslint-disable-next-line no-console
-      console.error = (...args: unknown[]) => logs.push("[error] " + args.map(String).join(" "));
-
-      try {
-        // eslint-disable-next-line no-new-func
-        const fn = new Function(code);
-        const result = fn();
-        if (result !== undefined && logs.length === 0) logs.push(String(result));
-        // Only mark success if there were no [error] logs either
-        const hasErrorLog = logs.some((l) => l.startsWith("[error]"));
-        setOutputStatus(hasErrorLog ? "error" : "success");
-        setOutput(logs.join("\n") || "(no output)\n\nTip: use console.log() to print results.\nE.g. console.log(twoSum([2,7,11,15], 9))");
-      } catch (e) {
-        setOutputStatus("error");
-        setOutput(e instanceof Error ? e.message : String(e));
-      } finally {
-        console.log = _log;
-        console.warn = _warn;
-        console.error = _error;
-        setIsRunning(false);
-      }
-    }, 30);
   };
 
   const handleStartInterview = () => {
@@ -511,7 +502,7 @@ export default function RoomPage() {
           </button>
 
           <button
-            onClick={() => setChatOpen((o) => !o)}
+            onClick={() => { setChatOpen((o) => !o); setUnread(0); }}
             style={{
               position: "relative",
               background: chatOpen ? "#334155" : "#2d2d2d",
