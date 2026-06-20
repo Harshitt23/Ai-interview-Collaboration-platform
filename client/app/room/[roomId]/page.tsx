@@ -88,6 +88,7 @@ export default function RoomPage() {
   const [unread, setUnread] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [hintDismissed, setHintDismissed] = useState(false);
+  const [outputStatus, setOutputStatus] = useState<"success" | "error" | null>(null);
   const isRemoteChange = useRef(false);
   const runRef = useRef<() => void>(() => {});
   const emitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -288,9 +289,11 @@ export default function RoomPage() {
         const fn = new Function(code);
         const result = fn();
         if (result !== undefined && logs.length === 0) logs.push(String(result));
+        setOutputStatus("success");
         setOutput(logs.join("\n") || "(no output)\n\nTip: use console.log() to print results.\nE.g. console.log(twoSum([2,7,11,15], 9))");
       } catch (e) {
-        setOutput(`Error: ${e instanceof Error ? e.message : String(e)}`);
+        setOutputStatus("error");
+        setOutput(e instanceof Error ? e.message : String(e));
       } finally {
         console.log = _log;
         console.warn = _warn;
@@ -377,7 +380,10 @@ export default function RoomPage() {
           >
             ← Dashboard
           </button>
-          <span style={{ fontWeight: "bold" }}>Room: {roomId?.slice(0, 8)}…</span>
+          <span style={{ fontWeight: "bold", fontSize: "13px" }}>
+            Interview Room{" "}
+            <span style={{ fontFamily: "monospace", color: "#888", fontWeight: 400 }}>#{roomId?.slice(0, 8)}</span>
+          </span>
           {interviewState === "active" && (
             <span
               style={{
@@ -513,8 +519,8 @@ export default function RoomPage() {
               fontWeight: "bold",
             }}
           >
-            💬 Chat
-            {unread > 0 && (
+            {chatOpen ? "✕ Hide Chat" : "💬 Chat"}
+            {!chatOpen && unread > 0 && (
               <span
                 style={{
                   position: "absolute",
@@ -538,29 +544,21 @@ export default function RoomPage() {
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <span style={{ fontSize: "12px", color: "#aaa" }}>
-            {participants.length} connected
-          </span>
-          {participants.map((id) => (
-            <span
-              key={id}
-              title={id}
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: "#4f46e5",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                fontWeight: "bold",
-              }}
-            >
-              {id.slice(0, 2).toUpperCase()}
-            </span>
-          ))}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {participants.map((id) => {
+            const isSelf = id === getSocket().id;
+            const role = isSelf
+              ? (isHost ? "Interviewer" : "Candidate")
+              : (isHost ? "Candidate" : "Interviewer");
+            const label = isSelf ? (user?.name ?? "You") : role;
+            return (
+              <span key={id} style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px" }}>
+                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#22c55e", flexShrink: 0 }} />
+                <span style={{ color: "#d4d4d4", fontWeight: isSelf ? 600 : 400 }}>{label}</span>
+                <span style={{ color: "#555", fontSize: "10px" }}>({role})</span>
+              </span>
+            );
+          })}
         </div>
       </div>
 
@@ -570,7 +568,7 @@ export default function RoomPage() {
         {interviewState === "active" && (
           <div
             style={{
-              width: isMobile ? "100%" : "40%",
+              width: isMobile ? "100%" : "35%",
               maxHeight: isMobile ? "38vh" : undefined,
               background: "#0f0f0f",
               color: "#d4d4d4",
@@ -738,9 +736,16 @@ export default function RoomPage() {
                   borderBottom: "1px solid #222",
                 }}
               >
-                <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.05em" }}>OUTPUT</span>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  letterSpacing: "0.04em",
+                  color: outputStatus === "success" ? "#22c55e" : outputStatus === "error" ? "#ef4444" : "#888",
+                }}>
+                  {outputStatus === "success" ? "✓ Execution Successful" : outputStatus === "error" ? "✗ Runtime Error" : "OUTPUT"}
+                </span>
                 <button
-                  onClick={() => setOutput(null)}
+                  onClick={() => { setOutput(null); setOutputStatus(null); }}
                   aria-label="Close output panel"
                   style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "14px" }}
                 >
@@ -767,7 +772,7 @@ export default function RoomPage() {
         {chatOpen && (
           <div
             style={{
-              width: isMobile ? "100%" : "280px",
+              width: isMobile ? "100%" : "240px",
               height: isMobile ? "45vh" : "auto",
               background: "#0f0f0f",
               borderLeft: isMobile ? "none" : "1px solid #2d2d2d",
