@@ -47,24 +47,56 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
-// Code execution proxy — avoids client-side 401 from emkc.org's auth requirement
+// Wandbox compiler list cache — fetched once per server process
+let wandboxList: { name: string; language: string }[] | null = null;
+async function getWandboxCompiler(lang: string): Promise<string | null> {
+  if (!wandboxList) {
+    const r = await fetch("https://wandbox.org/api/list.json");
+    wandboxList = (await r.json()) as { name: string; language: string }[];
+  }
+  // Exact language-field match; avoids "JavaScript" matching "Java"
+  const langMap: Record<string, string> = {
+    javascript: "JavaScript",
+    typescript: "TypeScript",
+    python: "Python",
+    java: "Java",
+    cpp: "C++",
+  };
+  const target = langMap[lang];
+  if (!target) return null;
+  const hit = wandboxList.find((c) => c.language === target);
+  return hit?.name ?? null;
+}
+
+// Code execution proxy — Piston (emkc.org) is whitelist-only since 2/15/2026; using Wandbox
 app.post("/api/execute", async (req, res) => {
-  const { language, version = "*", code } = req.body ?? {};
+  const { language, code } = req.body ?? {};
   if (!language || code === undefined) {
     res.status(400).json({ error: "language and code are required" });
     return;
   }
   try {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (process.env.PISTON_API_KEY) headers["Authorization"] = `Token ${process.env.PISTON_API_KEY}`;
-
-    const upstream = await fetch("https://emkc.org/api/v2/piston/execute", {
+    const compiler = await getWandboxCompiler(language);
+    if (!compiler) {
+      res.json({ run: { stdout: "", stderr: `Language '${language}' is not supported.`, output: "", code: 1 } });
+      return;
+    }
+    const upstream = await fetch("https://wandbox.org/api/compile.json", {
       method: "POST",
-      headers,
-      body: JSON.stringify({ language, version, files: [{ name: "main", content: code }] }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ compiler, code, stdin: "", options: "" }),
     });
-    const data = await upstream.json();
-    res.status(upstream.status).json(data);
+    const data = (await upstream.json()) as {
+      status?: string;
+      program_output?: string;
+      program_error?: string;
+      compiler_output?: string;
+      compiler_error?: string;
+    };
+    const stdout = data.program_output ?? "";
+    const stderr = [data.compiler_error, data.program_error].filter(Boolean).join("\n");
+    const output = [stdout, stderr].filter(Boolean).join("\n");
+    res.json({ run: { stdout, stderr, output, code: parseInt(data.status ?? "0", 10) } });
   } catch (err) {
     res.status(502).json({ error: "Execution service unreachable", detail: String(err) });
   }
