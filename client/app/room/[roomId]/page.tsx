@@ -9,15 +9,6 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useToast } from "@/components/Toast";
 import { logActivity } from "@/lib/activity";
 
-const EXECUTE_URL = `${process.env.NEXT_PUBLIC_SERVER_URL}/api/execute`;
-
-const pistonLang: Record<string, string> = {
-  javascript: "javascript",
-  typescript: "typescript",
-  python: "python",
-  java: "java",
-  cpp: "c++",
-};
 
 interface ChatMessage {
   socketId: string;
@@ -268,36 +259,45 @@ export default function RoomPage() {
     }, 300);
   };
 
-  const handleRunCode = async () => {
+  const handleRunCode = () => {
     if (isRunning) return;
     setIsRunning(true);
     setOutput("Running…");
-    try {
-      const res = await fetch(EXECUTE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language: pistonLang[language] ?? language,
-          version: "*",
-          code,
-        }),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        setOutput(`Execution service returned ${res.status} ${res.statusText}${text ? `\n${text.slice(0, 300)}` : ""}`);
+
+    // Short timeout so the "Running…" state renders before we block
+    setTimeout(() => {
+      if (language !== "javascript" && language !== "typescript") {
+        setOutput("Live execution supports JavaScript only.\nSwitch the language to JavaScript to run your code.");
+        setIsRunning(false);
         return;
       }
-      const data = await res.json();
-      const stdout = data.run?.stdout ?? "";
-      const stderr = data.run?.stderr ?? "";
-      const combined = [stdout, stderr].filter(Boolean).join("\n[stderr]\n").trim();
-      setOutput(combined || "(no output)");
-    } catch (e) {
-      console.error("Piston error:", e);
-      setOutput("Could not reach the execution service. Check your connection or try again in a moment.");
-    } finally {
-      setIsRunning(false);
-    }
+
+      const logs: string[] = [];
+      const _log = console.log;
+      const _warn = console.warn;
+      const _error = console.error;
+      // eslint-disable-next-line no-console
+      console.log = (...args: unknown[]) => logs.push(args.map(String).join(" "));
+      // eslint-disable-next-line no-console
+      console.warn = (...args: unknown[]) => logs.push("[warn] " + args.map(String).join(" "));
+      // eslint-disable-next-line no-console
+      console.error = (...args: unknown[]) => logs.push("[error] " + args.map(String).join(" "));
+
+      try {
+        // eslint-disable-next-line no-new-func
+        const fn = new Function(code);
+        const result = fn();
+        if (result !== undefined && logs.length === 0) logs.push(String(result));
+        setOutput(logs.join("\n") || "(no output)");
+      } catch (e) {
+        setOutput(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+        console.log = _log;
+        console.warn = _warn;
+        console.error = _error;
+        setIsRunning(false);
+      }
+    }, 30);
   };
 
   const handleStartInterview = () => {

@@ -47,50 +47,6 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
-// Code execution proxy — Piston (emkc.org) is whitelist-only since 2/15/2026; using Wandbox
-type WandboxEntry = { name: string; language: string };
-type WandboxResult = { status?: string; program_output?: string; program_error?: string; compiler_error?: string };
-let _wandboxList: WandboxEntry[] = [];
-
-async function resolveCompiler(lang: string): Promise<string | null> {
-  if (_wandboxList.length === 0) {
-    const r = await fetch("https://wandbox.org/api/list.json");
-    _wandboxList = (await r.json()) as WandboxEntry[];
-  }
-  const langMap: Record<string, string> = {
-    javascript: "JavaScript", typescript: "TypeScript",
-    python: "Python", java: "Java", cpp: "C++",
-  };
-  const target = langMap[lang];
-  if (!target) return null;
-  return _wandboxList.find((c) => c.language === target)?.name ?? null;
-}
-
-app.post("/api/execute", async (req, res) => {
-  const { language, code } = req.body ?? {};
-  if (!language || code === undefined) {
-    res.status(400).json({ error: "language and code are required" });
-    return;
-  }
-  try {
-    const compiler = await resolveCompiler(language as string);
-    if (!compiler) {
-      res.json({ run: { stdout: "", stderr: `Language '${language}' is not supported.`, output: "", code: 1 } });
-      return;
-    }
-    const upstream = await fetch("https://wandbox.org/api/compile.json", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ compiler, code, stdin: "", options: "" }),
-    });
-    const data = (await upstream.json()) as WandboxResult;
-    const stdout = data.program_output ?? "";
-    const stderr = (data.compiler_error ?? "") + (data.program_error ?? "");
-    res.json({ run: { stdout, stderr, output: stdout + stderr, code: parseInt(data.status ?? "0", 10) } });
-  } catch (err) {
-    res.status(502).json({ error: "Execution service unreachable", detail: String(err) });
-  }
-});
 
 app.get("/", (req, res) => {
   res.send("Backend Running...");
