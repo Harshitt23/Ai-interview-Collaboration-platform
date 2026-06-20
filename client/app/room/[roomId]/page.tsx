@@ -9,7 +9,7 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useToast } from "@/components/Toast";
 import { logActivity } from "@/lib/activity";
 
-const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
+const EXECUTE_URL = `${process.env.NEXT_PUBLIC_SERVER_URL}/api/execute`;
 
 const pistonLang: Record<string, string> = {
   javascript: "javascript",
@@ -271,21 +271,30 @@ export default function RoomPage() {
   const handleRunCode = async () => {
     if (isRunning) return;
     setIsRunning(true);
-    setOutput("Running...");
+    setOutput("Running…");
     try {
-      const res = await fetch(PISTON_URL, {
+      const res = await fetch(EXECUTE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           language: pistonLang[language] ?? language,
           version: "*",
-          files: [{ content: code }],
+          code,
         }),
       });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        setOutput(`Execution service returned ${res.status} ${res.statusText}${text ? `\n${text.slice(0, 300)}` : ""}`);
+        return;
+      }
       const data = await res.json();
-      setOutput(data.run?.output?.trim() || data.run?.stderr?.trim() || "(no output)");
-    } catch {
-      setOutput("Error: could not reach execution service.");
+      const stdout = data.run?.stdout ?? "";
+      const stderr = data.run?.stderr ?? "";
+      const combined = [stdout, stderr].filter(Boolean).join("\n[stderr]\n").trim();
+      setOutput(combined || "(no output)");
+    } catch (e) {
+      console.error("Piston error:", e);
+      setOutput("Could not reach the execution service. Check your connection or try again in a moment.");
     } finally {
       setIsRunning(false);
     }

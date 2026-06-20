@@ -47,6 +47,29 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
+// Code execution proxy — avoids client-side 401 from emkc.org's auth requirement
+app.post("/api/execute", async (req, res) => {
+  const { language, version = "*", code } = req.body ?? {};
+  if (!language || code === undefined) {
+    res.status(400).json({ error: "language and code are required" });
+    return;
+  }
+  try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (process.env.PISTON_API_KEY) headers["Authorization"] = `Token ${process.env.PISTON_API_KEY}`;
+
+    const upstream = await fetch("https://emkc.org/api/v2/piston/execute", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ language, version, files: [{ name: "main", content: code }] }),
+    });
+    const data = await upstream.json();
+    res.status(upstream.status).json(data);
+  } catch (err) {
+    res.status(502).json({ error: "Execution service unreachable", detail: String(err) });
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Backend Running...");
 });
