@@ -263,11 +263,12 @@ export default function RoomPage() {
   const handleRunCode = () => {
     if (isRunning) return;
     setIsRunning(true);
+    setOutputStatus(null); // reset status at the start of every run
     setOutput("Running…");
 
-    // Short timeout so the "Running…" state renders before we block
     setTimeout(() => {
       if (language !== "javascript" && language !== "typescript") {
+        setOutputStatus(null);
         setOutput("Live execution supports JavaScript only.\nSwitch the language to JavaScript to run your code.");
         setIsRunning(false);
         return;
@@ -289,7 +290,9 @@ export default function RoomPage() {
         const fn = new Function(code);
         const result = fn();
         if (result !== undefined && logs.length === 0) logs.push(String(result));
-        setOutputStatus("success");
+        // Only mark success if there were no [error] logs either
+        const hasErrorLog = logs.some((l) => l.startsWith("[error]"));
+        setOutputStatus(hasErrorLog ? "error" : "success");
         setOutput(logs.join("\n") || "(no output)\n\nTip: use console.log() to print results.\nE.g. console.log(twoSum([2,7,11,15], 9))");
       } catch (e) {
         setOutputStatus("error");
