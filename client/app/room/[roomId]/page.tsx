@@ -288,7 +288,7 @@ export default function RoomPage() {
         const fn = new Function(code);
         const result = fn();
         if (result !== undefined && logs.length === 0) logs.push(String(result));
-        setOutput(logs.join("\n") || "(no output)");
+        setOutput(logs.join("\n") || "(no output)\n\nTip: use console.log() to print results.\nE.g. console.log(twoSum([2,7,11,15], 9))");
       } catch (e) {
         setOutput(`Error: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
