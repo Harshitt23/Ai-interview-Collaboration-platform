@@ -47,28 +47,25 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
-// Wandbox compiler list cache — fetched once per server process
-let wandboxList: { name: string; language: string }[] | null = null;
-async function getWandboxCompiler(lang: string): Promise<string | null> {
-  if (!wandboxList) {
+// Code execution proxy — Piston (emkc.org) is whitelist-only since 2/15/2026; using Wandbox
+type WandboxEntry = { name: string; language: string };
+type WandboxResult = { status?: string; program_output?: string; program_error?: string; compiler_error?: string };
+let _wandboxList: WandboxEntry[] = [];
+
+async function resolveCompiler(lang: string): Promise<string | null> {
+  if (_wandboxList.length === 0) {
     const r = await fetch("https://wandbox.org/api/list.json");
-    wandboxList = (await r.json()) as { name: string; language: string }[];
+    _wandboxList = (await r.json()) as WandboxEntry[];
   }
-  const list = wandboxList; // local const so TS can narrow away null
   const langMap: Record<string, string> = {
-    javascript: "JavaScript",
-    typescript: "TypeScript",
-    python: "Python",
-    java: "Java",
-    cpp: "C++",
+    javascript: "JavaScript", typescript: "TypeScript",
+    python: "Python", java: "Java", cpp: "C++",
   };
   const target = langMap[lang];
   if (!target) return null;
-  const hit = list.find((c) => c.language === target);
-  return hit?.name ?? null;
+  return _wandboxList.find((c) => c.language === target)?.name ?? null;
 }
 
-// Code execution proxy — Piston (emkc.org) is whitelist-only since 2/15/2026; using Wandbox
 app.post("/api/execute", async (req, res) => {
   const { language, code } = req.body ?? {};
   if (!language || code === undefined) {
@@ -76,7 +73,7 @@ app.post("/api/execute", async (req, res) => {
     return;
   }
   try {
-    const compiler = await getWandboxCompiler(language);
+    const compiler = await resolveCompiler(language as string);
     if (!compiler) {
       res.json({ run: { stdout: "", stderr: `Language '${language}' is not supported.`, output: "", code: 1 } });
       return;
@@ -86,17 +83,10 @@ app.post("/api/execute", async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ compiler, code, stdin: "", options: "" }),
     });
-    const data = (await upstream.json()) as {
-      status?: string;
-      program_output?: string;
-      program_error?: string;
-      compiler_output?: string;
-      compiler_error?: string;
-    };
+    const data = (await upstream.json()) as WandboxResult;
     const stdout = data.program_output ?? "";
-    const stderr = [data.compiler_error, data.program_error].filter(Boolean).join("\n");
-    const output = [stdout, stderr].filter(Boolean).join("\n");
-    res.json({ run: { stdout, stderr, output, code: parseInt(data.status ?? "0", 10) } });
+    const stderr = (data.compiler_error ?? "") + (data.program_error ?? "");
+    res.json({ run: { stdout, stderr, output: stdout + stderr, code: parseInt(data.status ?? "0", 10) } });
   } catch (err) {
     res.status(502).json({ error: "Execution service unreachable", detail: String(err) });
   }
