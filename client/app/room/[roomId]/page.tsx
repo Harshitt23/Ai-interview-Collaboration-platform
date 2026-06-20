@@ -89,6 +89,7 @@ export default function RoomPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [hintDismissed, setHintDismissed] = useState(false);
   const [outputStatus, setOutputStatus] = useState<"success" | "error" | null>(null);
+  const [showInstructions, setShowInstructions] = useState(true);
   const isRemoteChange = useRef(false);
   const runRef = useRef<() => void>(() => {});
   const emitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1098,6 +1099,95 @@ export default function RoomPage() {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Instructions popup — shown once on entry */}
+      {showInstructions && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 60,
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              background: "#1a1a2e",
+              border: "1px solid #2d2d4e",
+              borderRadius: "14px",
+              padding: "28px",
+              width: "100%",
+              maxWidth: "420px",
+              color: "#fff",
+              boxShadow: "0 24px 48px rgba(0,0,0,0.6)",
+            }}
+          >
+            <div style={{ fontSize: "22px", marginBottom: "6px" }}>👋 Welcome to the Room</div>
+            <p style={{ color: "#888", fontSize: "13px", marginTop: 0, marginBottom: "20px" }}>
+              Here&apos;s how this playground works:
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "24px" }}>
+              {[
+                {
+                  icon: "▶",
+                  title: "Run your code",
+                  desc: 'Click the green Run button or press Ctrl + Enter (Cmd + Enter on Mac).',
+                },
+                {
+                  icon: "🖨️",
+                  title: "Use console.log() to see output",
+                  desc: 'Output only appears for console.log() calls. E.g. console.log(twoSum([2,7,11,15], 9))',
+                },
+                {
+                  icon: "⚙️",
+                  title: "JavaScript only for live execution",
+                  desc: 'Python, Java, C++ are available for syntax highlighting. Only JavaScript runs in the browser.',
+                },
+                {
+                  icon: "🎯",
+                  title: "Start Interview to load a problem",
+                  desc: 'The interviewer clicks Start Interview to load a random DSA problem with a timer.',
+                },
+                {
+                  icon: "⧉",
+                  title: "Share the room link",
+                  desc: 'Click Copy Link to invite your candidate. Both of you see the same code in real time.',
+                },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                  <span style={{ fontSize: "16px", flexShrink: 0, marginTop: "1px" }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: "#e2e8f0", marginBottom: "2px" }}>{title}</div>
+                    <div style={{ fontSize: "12px", color: "#666", lineHeight: 1.5 }}>{desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowInstructions(false)}
+              style={{
+                width: "100%",
+                background: "linear-gradient(to right, #6366f1, #8b5cf6)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "10px",
+                fontWeight: "bold",
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              Got it — let&apos;s go!
+            </button>
+          </div>
         </div>
       )}
     </div>
