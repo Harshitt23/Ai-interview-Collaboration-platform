@@ -54,7 +54,7 @@ async function getWandboxCompiler(lang: string): Promise<string | null> {
     const r = await fetch("https://wandbox.org/api/list.json");
     wandboxList = (await r.json()) as { name: string; language: string }[];
   }
-  // Exact language-field match; avoids "JavaScript" matching "Java"
+  const list = wandboxList; // local const so TS can narrow away null
   const langMap: Record<string, string> = {
     javascript: "JavaScript",
     typescript: "TypeScript",
@@ -64,7 +64,7 @@ async function getWandboxCompiler(lang: string): Promise<string | null> {
   };
   const target = langMap[lang];
   if (!target) return null;
-  const hit = wandboxList.find((c) => c.language === target);
+  const hit = list.find((c) => c.language === target);
   return hit?.name ?? null;
 }
 
