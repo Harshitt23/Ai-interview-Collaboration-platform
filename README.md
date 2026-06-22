@@ -50,7 +50,7 @@ Browser  ──HTTP──▶  Express API (auth, feedback)  ──▶  PostgreSQ
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
