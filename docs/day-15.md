@@ -18,7 +18,7 @@ A feature being "functionally correct" and being "production ready" are two diff
 
 3. **Loading states on every async action** — without them, users click buttons multiple times thinking nothing happened. This causes duplicate requests, confusing UX, and sometimes double-submits.
 
-4. **`console.log` vs `console.error`** — these write to different streams. Monitoring tools (Datadog, Sentry, Render logs) filter by severity. Errors should be `console.error` so they surface correctly in alerting systems.
+4. **`console.log` vs `console.error`** — these write to different streams. Monitoring tools (Datadog, Sentry, Render logs) filter by severity. Errors should be `console.error` so they surface correctly in alerting systems..
 
 ---
 
